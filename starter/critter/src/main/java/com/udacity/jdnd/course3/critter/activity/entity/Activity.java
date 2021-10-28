@@ -15,14 +15,15 @@ public class Activity {
     private String description;
     @Column(precision = 12, scale = 4)
     private BigDecimal price;
+    private String notes;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "schedule_id", referencedColumnName = "id")
     private Schedule schedule;
 
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinColumn(name = "user_id", referencedColumnName = "id")
-    private User user;
+    @JoinColumn(name = "employee_id", referencedColumnName = "id")
+    private User employeeId;
 
 
 }

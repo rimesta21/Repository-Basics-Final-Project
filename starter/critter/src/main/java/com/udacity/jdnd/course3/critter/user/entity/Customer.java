@@ -6,13 +6,23 @@ import javax.persistence.*;
 
 @Entity
 public class Customer extends User {
-    private Long number_pets;
+    @Column(name = "phone_number")
+    private String phoneNumber;
+    private String notes;
 
-    public Long getNumber_pets() {
-        return number_pets;
+    public String getPhoneNumber() {
+        return phoneNumber;
     }
 
-    public void setNumber_pets(Long number_pets) {
-        this.number_pets = number_pets;
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 }

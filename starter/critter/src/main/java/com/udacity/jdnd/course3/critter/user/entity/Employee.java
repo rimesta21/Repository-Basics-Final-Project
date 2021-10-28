@@ -6,7 +6,6 @@ import java.util.Date;
 @Entity
 public class Employee extends User {
     private EmployeeSkill skill;
-    private Date birthday;
 
     public EmployeeSkill getSkill() {
         return skill;
@@ -14,13 +13,5 @@ public class Employee extends User {
 
     public void setSkill(EmployeeSkill skill) {
         this.skill = skill;
-    }
-
-    public Date getBirthday() {
-        return birthday;
-    }
-
-    public void setBirthday(Date birthday) {
-        this.birthday = birthday;
     }
 }
