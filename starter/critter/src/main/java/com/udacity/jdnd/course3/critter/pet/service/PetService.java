@@ -44,5 +44,9 @@ public class PetService {
         return petRepo.existsById(id);
     }
 
+    public List<Pet> getPetsByCustomerId(Long id) {
+        return petRepo.getPetsByCustomerId(id);
+    }
+
 
 }

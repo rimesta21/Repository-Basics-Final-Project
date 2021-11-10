@@ -190,4 +190,8 @@ public class ScheduleService {
             schedule.setPets(pets);
         }
     }
+
+    public List<Schedule> getSchedulesByEmployeeId(Long id) {
+        return scheduleRepo.getScheduleFromEmployeeId(id);
+    }
 }
