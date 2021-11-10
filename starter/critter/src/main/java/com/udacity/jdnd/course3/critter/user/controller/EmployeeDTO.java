@@ -14,6 +14,7 @@ public class EmployeeDTO {
     private String name;
     private Set<EmployeeSkill> skills;
     private Set<DayOfWeek> daysAvailable;
+    private String email;
 
     public long getId() {
         return id;
@@ -45,5 +46,13 @@ public class EmployeeDTO {
 
     public void setDaysAvailable(Set<DayOfWeek> daysAvailable) {
         this.daysAvailable = daysAvailable;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

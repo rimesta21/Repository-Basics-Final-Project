@@ -5,13 +5,13 @@ import java.util.Date;
 
 @Entity
 public class Employee extends User {
-    private EmployeeSkill skill;
+    String email;
 
-    public EmployeeSkill getSkill() {
-        return skill;
+    public String getEmail() {
+        return email;
     }
 
-    public void setSkill(EmployeeSkill skill) {
-        this.skill = skill;
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

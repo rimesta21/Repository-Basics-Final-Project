@@ -1,5 +1,7 @@
 package com.udacity.jdnd.course3.critter.pet.entity;
 
+import com.fasterxml.jackson.annotation.JsonView;
+import com.udacity.jdnd.course3.critter.schedule.controller.ScheduleViews;
 import com.udacity.jdnd.course3.critter.schedule.entity.Schedule;
 import com.udacity.jdnd.course3.critter.user.entity.User;
 
@@ -13,8 +15,9 @@ public class Pet {
     @Id
     @GeneratedValue
     private Long id;
-
+    @JsonView(ScheduleViews.Public.class)
     private String name;
+    @JsonView(ScheduleViews.Public.class)
     private PetType type;
     private String notes;
     @Column(name = "birth_date")
@@ -22,6 +25,7 @@ public class Pet {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
+    @JsonView(ScheduleViews.Public.class)
     private User owner;
 
     @ManyToMany(mappedBy = "pets", cascade = CascadeType.ALL)

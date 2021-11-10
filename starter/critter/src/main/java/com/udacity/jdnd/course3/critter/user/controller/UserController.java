@@ -5,8 +5,7 @@ import com.udacity.jdnd.course3.critter.pet.service.PetService;
 import com.udacity.jdnd.course3.critter.user.controller.CustomerDTO;
 import com.udacity.jdnd.course3.critter.user.controller.EmployeeDTO;
 import com.udacity.jdnd.course3.critter.user.controller.EmployeeRequestDTO;
-import com.udacity.jdnd.course3.critter.user.entity.Customer;
-import com.udacity.jdnd.course3.critter.user.entity.User;
+import com.udacity.jdnd.course3.critter.user.entity.*;
 import com.udacity.jdnd.course3.critter.user.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,58 +29,49 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private PetService petService;
-
     @PostMapping("/customer")
     public CustomerDTO saveCustomer(@RequestBody CustomerDTO customerDTO){
-        User customer = userService.eatUser(convertDTOToCustomer(customerDTO));
-        List<Pet> pets = new ArrayList<>();
-        List<Long> petIds = customerDTO.getPetIds();
-        if(petIds != null) {
-            petIds.stream()
-                    .filter(id -> petService.getPetById(id) != null)
-                    .forEach(id -> {
-                        Pet pet = petService.getPetById(id);
-                        pet.setOwner(customer);
-                        petService.eatPet(pet);
-                        pets.add(pet);
-                    });
-        }
-        if(pets.size() > 0) {
-            customer.setPets(pets);
-        }
+        User customer = userService.eatCustomer(convertDTOToCustomer(customerDTO), customerDTO.getPetIds());
         return convertEntityToCustomerDTO(customer);
     }
 
     @GetMapping("/customer")
     public List<CustomerDTO> getAllCustomers(){
-        throw new UnsupportedOperationException();
+        return userService.getAllCustomers().stream()
+                .map(UserController::convertEntityToCustomerDTO)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/customer/pet/{petId}")
     public CustomerDTO getOwnerByPet(@PathVariable long petId){
-        throw new UnsupportedOperationException();
+        return convertEntityToCustomerDTO(userService.getUserByPetId(petId));
     }
 
     @PostMapping("/employee")
     public EmployeeDTO saveEmployee(@RequestBody EmployeeDTO employeeDTO) {
-        throw new UnsupportedOperationException();
+        Employee employee = convertDTOToEmployee(employeeDTO);
+        return convertEntityToEmployeeDTO(userService.eatEmployee(employee, employeeDTO.getSkills(), employeeDTO.getDaysAvailable()));
     }
 
-    @PostMapping("/employee/{employeeId}")
+    @GetMapping("/employee/{employeeId}")
     public EmployeeDTO getEmployee(@PathVariable long employeeId) {
-        throw new UnsupportedOperationException();
+        return convertEntityToEmployeeDTO(userService.findUserById(employeeId));
     }
 
     @PutMapping("/employee/{employeeId}")
     public void setAvailability(@RequestBody Set<DayOfWeek> daysAvailable, @PathVariable long employeeId) {
-        throw new UnsupportedOperationException();
+        userService.setEmployeeAvailability(daysAvailable, employeeId);
     }
 
-    @GetMapping("/employee/availability")
+    @PostMapping("/employee/availability")
     public List<EmployeeDTO> findEmployeesForService(@RequestBody EmployeeRequestDTO employeeDTO) {
-        throw new UnsupportedOperationException();
+        return userService.findEmployeesByDateAndSkill(employeeDTO.getDate(), employeeDTO.getSkills())
+                .stream().map(UserController::convertEntityToEmployeeDTO).collect(Collectors.toList());
+    }
+
+    @GetMapping("/employees")
+    public List<EmployeeDTO> listEmployees() {
+        return userService.getAllEmployees().stream().map(UserController::convertEntityToEmployeeDTO).collect(Collectors.toList());
     }
 
     private static CustomerDTO convertEntityToCustomerDTO(User user) {
@@ -98,6 +88,26 @@ public class UserController {
         Customer customer = new Customer();
         BeanUtils.copyProperties(customerDTO, customer);
         return customer;
+    }
+
+    private static EmployeeDTO convertEntityToEmployeeDTO(User user) {
+        EmployeeDTO employeeDTO = new EmployeeDTO();
+        BeanUtils.copyProperties(user, employeeDTO);
+        Set<EmployeeSkills> skills = user.getSkills();
+        if(skills != null) {
+            employeeDTO.setSkills(skills.stream().map(EmployeeSkills::getSkill).collect(Collectors.toSet()));
+        }
+        Set<EmployeeDayOfWeek> availability = user.getDaysAvailable();
+        if(availability != null) {
+            employeeDTO.setDaysAvailable(availability.stream().map(EmployeeDayOfWeek::getDay).collect(Collectors.toSet()));
+        }
+        return employeeDTO;
+    }
+
+    private static Employee convertDTOToEmployee(EmployeeDTO employeeDTO) {
+        Employee employee = new Employee();
+        BeanUtils.copyProperties(employeeDTO, employee);
+        return employee;
     }
 
 }

@@ -1,27 +1,43 @@
 package com.udacity.jdnd.course3.critter.user.entity;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import com.udacity.jdnd.course3.critter.activity.entity.Activity;
 import com.udacity.jdnd.course3.critter.pet.entity.Pet;
+import com.udacity.jdnd.course3.critter.schedule.controller.ScheduleViews;
 import org.hibernate.annotations.Nationalized;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Set;
 
 @Entity
-@Inheritance
+@Inheritance(strategy = InheritanceType.JOINED)
 public class User {
     @Id
     @GeneratedValue
     private Long id;
 
     @Nationalized
+    @JsonView(ScheduleViews.Public.class)
     private String name;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", cascade = CascadeType.ALL)
     private List<Pet> pets;
 
-    @OneToOne(mappedBy = "employeeId", cascade = CascadeType.ALL)
-    private Activity activity;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "employee", cascade = CascadeType.ALL)
+    private List<Activity> activities;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "employee", cascade = CascadeType.ALL)
+    private Set<EmployeeSkills> skills;
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "employee", cascade = CascadeType.ALL)
+    private Set<EmployeeDayOfWeek> daysAvailable;
+
+    public User(){}
+
+    public User(String name) {
+        this.name = name;
+    }
 
     public Long getId() {
         return id;
@@ -47,11 +63,27 @@ public class User {
         this.pets = pets;
     }
 
-    public Activity getActivity() {
-        return activity;
+    public List<Activity> getActivities() {
+        return activities;
     }
 
-    public void setActivity(Activity activity) {
-        this.activity = activity;
+    public void setActivities(List<Activity> activities) {
+        this.activities = activities;
+    }
+
+    public Set<EmployeeSkills> getSkills() {
+        return skills;
+    }
+
+    public void setSkills(Set<EmployeeSkills> skills) {
+        this.skills = skills;
+    }
+
+    public Set<EmployeeDayOfWeek> getDaysAvailable() {
+        return daysAvailable;
+    }
+
+    public void setDaysAvailable(Set<EmployeeDayOfWeek> daysAvailable) {
+        this.daysAvailable = daysAvailable;
     }
 }
