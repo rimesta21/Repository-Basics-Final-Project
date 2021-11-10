@@ -23,7 +23,7 @@ public class Pet {
     @Column(name = "birth_date")
     private LocalDate birthDate;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     @JsonView(ScheduleViews.Public.class)
     private User owner;

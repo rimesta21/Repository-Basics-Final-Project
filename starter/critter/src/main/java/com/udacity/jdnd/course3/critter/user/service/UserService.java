@@ -29,19 +29,52 @@ public class UserService {
     @Autowired
     private ScheduleService scheduleService;
 
-    public User eatCustomer(User user, List<Long> petIds) {
+    public Customer eatCustomer(Customer newCustomer, List<Long> petIds) {
+        if(newCustomer.getId() != null) {
+            Optional<User> optionalUser = userRepo.findById(newCustomer.getId());
+            if(optionalUser.isPresent()) {
+                Customer customer = (Customer) optionalUser.get();
+                if(newCustomer.getName() != null) {
+                    customer.setName(newCustomer.getName());
+                }
+                if(newCustomer.getNotes() != null) {
+                    customer.setNotes(newCustomer.getNotes());
+                }
+                if(newCustomer.getPhoneNumber() != null) {
+                    customer.setPhoneNumber(newCustomer.getPhoneNumber());
+                }
+                //only adding new pets, deleting pets would be another controller call
+                if(petIds != null) {
+                    List<Long> existingPetIds = customer.getPets().stream().map(Pet::getId).collect(Collectors.toList());
+                    List<Pet> newPets = new ArrayList<>();
+                    petIds.stream().filter(id -> petService.existsById(id) && !existingPetIds.contains(id))
+                            .forEach(id -> {
+                                Pet pet = petService.getPetById(id);
+                                if(pet.getOwner() == null) {
+                                    pet.setOwner(customer);
+                                    newPets.add(pet);
+                                }
+                            });
+                    customer.getPets().addAll(newPets);
+                }
+                return userRepo.save(customer);
+            }
+        }
+
         if(petIds != null) {
             List<Pet> pets = new ArrayList<>();
             petIds.stream()
                     .filter(id -> petService.getPetById(id) != null)
                     .forEach(id -> {
                         Pet pet = petService.getPetById(id);
-                        pet.setOwner(user);
-                        pets.add(pet);
+                        if(pet.getOwner() == null) {
+                            pet.setOwner(newCustomer);
+                            pets.add(pet);
+                        }
                     });
-            user.setPets(pets);
+            newCustomer.setPets(pets);
         }
-        return userRepo.save(user);
+        return userRepo.save(newCustomer);
     }
 
     public User getUserByPetId(Long petId) {
@@ -57,11 +90,50 @@ public class UserService {
     }
 
     public User eatEmployee(Employee newEmployee, Set<EmployeeSkill> skills, Set<DayOfWeek> availability) {
+        if(newEmployee.getId() != null) {
+            Optional<User> userOptional = userRepo.findById(newEmployee.getId());
+            if(userOptional.isPresent()) {
+                Employee employee = (Employee) userOptional.get();
+                if(newEmployee.getName() != null) {
+                    employee.setName(newEmployee.getName());
+                }
+                if(newEmployee.getEmail() != null) {
+                    employee.setEmail(newEmployee.getEmail());
+                }
+                //only adding new skills, deleting skills would be another controller call
+                if (skills != null) {
+                    Set<EmployeeSkill> existingSkills = employee.getSkills().stream().map(EmployeeSkills::getSkill).collect(Collectors.toSet());
+                    Set<EmployeeSkills> newSkills = new HashSet<>();
+                    skills.stream().filter(skill -> !existingSkills.contains(skill))
+                            .forEach(skill -> {
+                                EmployeeSkills es = new EmployeeSkills(skill);
+                                es.setEmployee(employee);
+                                newSkills.add(es);
+                            });
+                    employee.getSkills().addAll(newSkills);
+                }
+
+                if(availability != null) {
+                    Set<DayOfWeek> existingAvailability = employee.getDaysAvailable().stream().map(EmployeeDayOfWeek::getDay).collect(Collectors.toSet());
+                    Set<EmployeeDayOfWeek> newDays = new HashSet<>();
+
+                    availability.stream().filter(day -> !existingAvailability.contains(day))
+                            .forEach(day -> {
+                                EmployeeDayOfWeek newDay = new EmployeeDayOfWeek(day);
+                                newDay.setEmployee(employee);
+                                newDays.add(newDay);
+                            });
+                    employee.getDaysAvailable().addAll(newDays);
+                }
+                return userRepo.save(employee);
+            }
+        }
+
         if(skills != null) {
             Set<EmployeeSkills> employeeSkills = new HashSet<>();
             skills.forEach(skill -> {
                 EmployeeSkills es = new EmployeeSkills(skill);
-                es.setEmployeeId(newEmployee);
+                es.setEmployee(newEmployee);
                 employeeSkills.add(es);
             });
             newEmployee.setSkills(employeeSkills);

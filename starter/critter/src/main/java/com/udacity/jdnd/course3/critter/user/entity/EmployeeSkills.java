@@ -32,7 +32,7 @@ public class EmployeeSkills {
         return employee;
     }
 
-    public void setEmployeeId(User employee) {
+    public void setEmployee(User employee) {
         this.employee = employee;
     }
 

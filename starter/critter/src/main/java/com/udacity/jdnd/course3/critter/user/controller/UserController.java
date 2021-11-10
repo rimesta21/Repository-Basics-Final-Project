@@ -30,7 +30,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/customer")
-    public CustomerDTO saveCustomer(@RequestBody CustomerDTO customerDTO){
+    public CustomerDTO saveCustomer(@RequestBody CustomerDTO customerDTO) {
         User customer = userService.eatCustomer(convertDTOToCustomer(customerDTO), customerDTO.getPetIds());
         return convertEntityToCustomerDTO(customer);
     }
