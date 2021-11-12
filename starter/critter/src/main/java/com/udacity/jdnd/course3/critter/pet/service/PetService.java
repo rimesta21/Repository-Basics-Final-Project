@@ -4,9 +4,14 @@ import com.udacity.jdnd.course3.critter.pet.entity.Pet;
 import com.udacity.jdnd.course3.critter.pet.repository.PetRepository;
 import com.udacity.jdnd.course3.critter.schedule.entity.Schedule;
 import com.udacity.jdnd.course3.critter.user.entity.Customer;
+import com.udacity.jdnd.course3.critter.user.service.UserService;
+import com.udacity.jdnd.course3.critter.utility.NullAwareBeanUtilsBean;
+import org.apache.commons.beanutils.BeanUtilsBean;
+import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,6 +21,9 @@ public class PetService {
     @Autowired
     private PetRepository petRepo;
 
+    @Autowired
+    private UserService userService;
+
     public Pet getPetById(Long id) {
         Optional<Pet> petOptional = petRepo.findById(id);
         if(petOptional.isEmpty()) {
@@ -24,8 +32,41 @@ public class PetService {
         return petOptional.get();
     }
 
-    public Pet eatPet(Pet pet) {
-        return petRepo.save(pet);
+    public Pet eatPet(Pet newPet, Long ownerId) {
+        if(newPet.getId() != null) {
+            Optional<Pet> optionalPet = petRepo.findById(newPet.getId());
+            if(optionalPet.isPresent()) {
+                Pet pet = optionalPet.get();
+                try {
+                    BeanUtilsBean notNull = new NullAwareBeanUtilsBean();
+                    notNull.copyProperties(pet, newPet);
+                } catch(IllegalAccessException | InvocationTargetException e) {
+                    e.getCause();
+                }
+
+                if(ownerId != null && userService.employeeExists(ownerId)) {
+                    Customer oldCustomer = pet.getOwner();
+                    if(oldCustomer != null && oldCustomer.getPets() != null) {
+                        oldCustomer.getPets().remove(pet);
+                    }
+                    Customer newCustomer = userService.findCustomerById(ownerId);
+                    pet.setOwner(newCustomer);
+                    newCustomer.getPets().add(pet);
+                }
+                return petRepo.save(pet);
+            }
+        }
+        newPet.setId(null);
+        if(ownerId != null && userService.employeeExists(ownerId)) {
+            Customer customer = userService.findCustomerById(ownerId);
+            if(customer.getPets() != null) {
+                customer.getPets().add(newPet);
+            } else {
+                customer.setPets(Lists.newArrayList(newPet));
+            }
+            newPet.setOwner(customer);
+        }
+        return petRepo.save(newPet);
     }
 
     public Customer getOwnerId(Long petId) {
@@ -48,5 +89,12 @@ public class PetService {
         return petRepo.getPetsByCustomerId(id);
     }
 
+    public List<Pet> listPets() {
+        return petRepo.findAll();
+    }
+
+    public List<Pet> petsByOwner(Long ownerId) {
+        return userService.getCustomerPets(ownerId);
+    }
 
 }

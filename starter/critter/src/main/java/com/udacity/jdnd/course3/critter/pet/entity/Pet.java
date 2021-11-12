@@ -3,6 +3,7 @@ package com.udacity.jdnd.course3.critter.pet.entity;
 import com.fasterxml.jackson.annotation.JsonView;
 import com.udacity.jdnd.course3.critter.schedule.controller.ScheduleViews;
 import com.udacity.jdnd.course3.critter.schedule.entity.Schedule;
+import com.udacity.jdnd.course3.critter.user.entity.Customer;
 import com.udacity.jdnd.course3.critter.user.entity.User;
 
 import javax.persistence.*;
@@ -26,9 +27,9 @@ public class Pet {
     @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "owner_id", referencedColumnName = "id")
     @JsonView(ScheduleViews.Public.class)
-    private User owner;
+    private Customer owner;
 
-    @ManyToMany(mappedBy = "pets", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "pets", cascade = CascadeType.MERGE)
     private List<Schedule> schedules;
 
     public Long getId() {
@@ -71,11 +72,19 @@ public class Pet {
         this.birthDate = birthday;
     }
 
-    public User getOwner() {
+    public Customer getOwner() {
         return owner;
     }
 
-    public void setOwner(User owner) {
+    public LocalDate getBirthDate() {
+        return birthDate;
+    }
+
+    public void setBirthDate(LocalDate birthDate) {
+        this.birthDate = birthDate;
+    }
+
+    public void setOwner(Customer owner) {
         this.owner = owner;
     }
 

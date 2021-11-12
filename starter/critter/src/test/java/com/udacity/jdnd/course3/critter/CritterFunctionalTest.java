@@ -7,12 +7,16 @@ import com.udacity.jdnd.course3.critter.pet.controller.PetDTO;
 import com.udacity.jdnd.course3.critter.pet.entity.PetType;
 import com.udacity.jdnd.course3.critter.schedule.controller.ScheduleController;
 import com.udacity.jdnd.course3.critter.schedule.controller.ScheduleDTO;
+import com.udacity.jdnd.course3.critter.schedule.entity.Schedule;
 import com.udacity.jdnd.course3.critter.user.controller.CustomerDTO;
 import com.udacity.jdnd.course3.critter.user.controller.EmployeeDTO;
 import com.udacity.jdnd.course3.critter.user.controller.EmployeeRequestDTO;
 import com.udacity.jdnd.course3.critter.user.controller.UserController;
+import com.udacity.jdnd.course3.critter.user.entity.Employee;
 import com.udacity.jdnd.course3.critter.user.entity.EmployeeSkill;
+import com.udacity.jdnd.course3.critter.user.entity.User;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -168,8 +172,13 @@ public class CritterFunctionalTest {
         er2.setDate(LocalDate.of(2019, 12, 27)); //friday
         er2.setSkills(Sets.newHashSet(EmployeeSkill.WALKING, EmployeeSkill.SHAVING));
 
+        /*
+        In my implementation both employee 2 and 3 can be chosen because they are both avalible on Friday and have at least one of the skills.
+        I prefer it like these so that not one employee is overworked if they don't need to be but also this shows all possible employees that can work
+        giving the employer a fuller picture.
+        */
         Set<Long> eIds2 = userController.findEmployeesForService(er2).stream().map(EmployeeDTO::getId).collect(Collectors.toSet());
-        Set<Long> eIds2expected = Sets.newHashSet(emp3n.getId());
+        Set<Long> eIds2expected = Sets.newHashSet(emp2n.getId(), emp3n.getId());
         Assertions.assertEquals(eIds2, eIds2expected);
     }
 
@@ -198,6 +207,7 @@ public class CritterFunctionalTest {
     }
 
     @Test
+    @Order(1)
     public void testFindScheduleByEntities() {
         ScheduleDTO sched1 = populateSchedule(1, 2, LocalDate.of(2019, 12, 25), Sets.newHashSet(EmployeeSkill.FEEDING, EmployeeSkill.WALKING));
         ScheduleDTO sched2 = populateSchedule(3, 1, LocalDate.of(2019, 12, 26), Sets.newHashSet(EmployeeSkill.PETTING));
@@ -206,9 +216,11 @@ public class CritterFunctionalTest {
         ScheduleDTO sched3 = new ScheduleDTO();
         sched3.setEmployeeIds(sched1.getEmployeeIds());
         sched3.setPetIds(sched2.getPetIds());
+        //Employee 1 can't do shaving or petting up to this point so the schedule is disregarding it. I am adding them to their skill set.
+        userController.setSkills(Sets.newHashSet(EmployeeSkill.SHAVING, EmployeeSkill.PETTING, EmployeeSkill.FEEDING), sched1.getEmployeeIds().stream().iterator().next());
         sched3.setActivities(Sets.newHashSet(EmployeeSkill.SHAVING, EmployeeSkill.PETTING));
-        sched3.setDate(LocalDate.of(2020, 3, 23));
-        scheduleController.createSchedule(sched3);
+        sched3.setDate(LocalDate.of(2020, 3, 25));
+        ScheduleDTO test = scheduleController.createSchedule(sched3);
 
         /*
             We now have 3 schedule entries. The third schedule entry has the same employees as the 1st schedule

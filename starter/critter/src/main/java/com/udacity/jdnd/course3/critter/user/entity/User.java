@@ -24,7 +24,7 @@ public class User {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner", cascade = CascadeType.ALL)
     private List<Pet> pets;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "employee", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "employee", cascade = CascadeType.MERGE)
     private List<Activity> activities;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "employee", cascade = CascadeType.ALL)
@@ -86,4 +86,6 @@ public class User {
     public void setDaysAvailable(Set<EmployeeDayOfWeek> daysAvailable) {
         this.daysAvailable = daysAvailable;
     }
+
+
 }

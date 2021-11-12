@@ -6,7 +6,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Handles web requests related to Pets.
@@ -19,23 +21,35 @@ public class PetController {
 
     @PostMapping
     public PetDTO savePet(@RequestBody PetDTO petDTO) {
-        Pet pet = petService.eatPet(convertDTOToPet(petDTO));
+        Pet pet = petService.eatPet(convertDTOToPet(petDTO), petDTO.getOwnerId());
         return convertEntityToPetDTO(pet);
     }
 
     @GetMapping("/{petId}")
     public PetDTO getPet(@PathVariable long petId) {
-        return convertEntityToPetDTO(petService.getPetById(petId));
+        Pet pet = petService.getPetById(petId);
+        if(pet != null) {
+            return convertEntityToPetDTO(petService.getPetById(petId));
+        }
+        return null;
     }
 
     @GetMapping
     public List<PetDTO> getPets(){
-        throw new UnsupportedOperationException();
+        List<Pet> pets = petService.listPets();
+        if(pets != null) {
+            return pets.stream().map(PetController::convertEntityToPetDTO).collect(Collectors.toList());
+        }
+        return null;
     }
 
     @GetMapping("/owner/{ownerId}")
     public List<PetDTO> getPetsByOwner(@PathVariable long ownerId) {
-        throw new UnsupportedOperationException();
+        List<Pet> pets = petService.petsByOwner(ownerId);
+        if(pets != null) {
+            return pets.stream().map(PetController::convertEntityToPetDTO).collect(Collectors.toList());
+        }
+        return null;
     }
 
     private static PetDTO convertEntityToPetDTO(Pet pet) {

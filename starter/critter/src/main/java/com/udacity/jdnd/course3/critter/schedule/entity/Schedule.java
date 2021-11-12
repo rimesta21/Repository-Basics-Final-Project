@@ -26,7 +26,7 @@ public class Schedule {
     @JsonView(ScheduleViews.Public.class)
     private List<Pet> pets;
 
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "schedule", cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "schedule", cascade = CascadeType.MERGE)
     @JsonView(ScheduleViews.Public.class)
     private List<Activity> activities;
 

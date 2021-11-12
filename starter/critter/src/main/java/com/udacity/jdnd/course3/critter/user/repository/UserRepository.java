@@ -32,6 +32,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     boolean existsEmployeeById(Long id);
 
-
+    boolean existsCustomerById(Long id);
 
 }

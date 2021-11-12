@@ -37,9 +37,13 @@ public class UserController {
 
     @GetMapping("/customer")
     public List<CustomerDTO> getAllCustomers(){
-        return userService.getAllCustomers().stream()
-                .map(UserController::convertEntityToCustomerDTO)
-                .collect(Collectors.toList());
+        List<Customer> customers = userService.getAllCustomers();
+        if(customers != null) {
+            return customers.stream()
+                    .map(UserController::convertEntityToCustomerDTO)
+                    .collect(Collectors.toList());
+        }
+        return null;
     }
 
     @GetMapping("/customer/pet/{petId}")
@@ -63,15 +67,27 @@ public class UserController {
         userService.setEmployeeAvailability(daysAvailable, employeeId);
     }
 
+    @PutMapping("/employee/skills/{employeeId}")
+    public void setSkills(@RequestBody Set<EmployeeSkill> skills, @PathVariable Long employeeId) {
+        userService.setEmployeeSkills(skills, employeeId);
+    }
+
     @PostMapping("/employee/availability")
     public List<EmployeeDTO> findEmployeesForService(@RequestBody EmployeeRequestDTO employeeDTO) {
-        return userService.findEmployeesByDateAndSkill(employeeDTO.getDate(), employeeDTO.getSkills())
-                .stream().map(UserController::convertEntityToEmployeeDTO).collect(Collectors.toList());
+        List<Employee> employees = userService.findEmployeesByDateAndSkill(employeeDTO.getDate(), employeeDTO.getSkills());
+        if(employees != null) {
+            return employees.stream().map(UserController::convertEntityToEmployeeDTO).collect(Collectors.toList());
+        }
+        return null;
     }
 
     @GetMapping("/employees")
     public List<EmployeeDTO> listEmployees() {
-        return userService.getAllEmployees().stream().map(UserController::convertEntityToEmployeeDTO).collect(Collectors.toList());
+        List<Employee> employees = userService.getAllEmployees();
+        if(employees != null) {
+            return employees.stream().map(UserController::convertEntityToEmployeeDTO).collect(Collectors.toList());
+        }
+        return null;
     }
 
     private static CustomerDTO convertEntityToCustomerDTO(User user) {

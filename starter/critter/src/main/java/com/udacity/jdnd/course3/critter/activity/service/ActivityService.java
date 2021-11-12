@@ -1,5 +1,6 @@
 package com.udacity.jdnd.course3.critter.activity.service;
 
+import com.google.common.collect.Lists;
 import com.udacity.jdnd.course3.critter.activity.entity.Activity;
 import com.udacity.jdnd.course3.critter.activity.repository.ActivityRepository;
 import com.udacity.jdnd.course3.critter.schedule.entity.Schedule;
@@ -33,6 +34,7 @@ public class ActivityService {
 
     public void deleteActivityById(Long id) {activityRepo.deleteById(id);}
 
+
     public Activity saveEmployeesById(LocalDate date, List<Long> employeeIds, EmployeeSkill description) {
         int i = 0;
         int size = employeeIds.size();
@@ -54,7 +56,11 @@ public class ActivityService {
             if(userService.availableDayForEmployee(id, date.getDayOfWeek())
                     && userService.withInSkillRangeForEmployee(id, description)) {
                 Activity activity = new Activity(description, employee);
-                employee.getActivities().add(activity);
+                if(employee.getActivities() != null) {
+                    employee.getActivities().add(activity);
+                } else {
+                    employee.setActivities(Lists.newArrayList(activity));
+                }
                 //theoretically gives everyone a fair chance
                 Collections.shuffle(employeeIds);
                 return activity;

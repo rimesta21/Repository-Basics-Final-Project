@@ -1,5 +1,6 @@
 package com.udacity.jdnd.course3.critter.schedule.services;
 
+import com.google.common.collect.Lists;
 import com.udacity.jdnd.course3.critter.activity.entity.Activity;
 import com.udacity.jdnd.course3.critter.activity.service.ActivityService;
 import com.udacity.jdnd.course3.critter.pet.entity.Pet;
@@ -13,6 +14,7 @@ import com.udacity.jdnd.course3.critter.user.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -33,6 +35,7 @@ public class ScheduleService {
         scheduleRepo.deleteById(id);
     }
 
+    @Transactional
     public Schedule eatSchedule(Schedule schedule, List<Long> employeeIds, List<Long> petIds, Set<EmployeeSkill> activities)  {
         if(schedule.getId() != null) {
             Optional<Schedule> scheduleOptional = scheduleRepo.findById(schedule.getId());
@@ -87,7 +90,7 @@ public class ScheduleService {
                 return scheduleRepo.save(scheduleUpdate);
             }
         }
-        
+
         if(schedule.getDate() != null && scheduleRepo.findScheduleByDate(schedule.getDate()) == null) {
             savePets(schedule, petIds);
             schedule.setActivities(new ArrayList<>());
@@ -184,7 +187,11 @@ public class ScheduleService {
                     .filter(id -> petService.getPetById(id) != null)
                     .forEach(id -> {
                         Pet pet = petService.getPetById(id);
-                        pet.getSchedules().add(schedule);
+                        if(pet.getSchedules() != null) {
+                            pet.getSchedules().add(schedule);
+                        } else {
+                            pet.setSchedules(Lists.newArrayList(schedule));
+                        }
                         pets.add(pet);
                     });
             schedule.setPets(pets);

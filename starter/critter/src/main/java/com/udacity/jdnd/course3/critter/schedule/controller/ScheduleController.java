@@ -47,7 +47,11 @@ public class ScheduleController {
 
     @GetMapping
     public List<ScheduleDTO> getAllSchedules() {
-        return scheduleService.listSchedules().stream().map(ScheduleController::convertScheduleToDTO).collect(Collectors.toList());
+        List<Schedule> schedules = scheduleService.listSchedules();
+        if(schedules != null) {
+            return schedules.stream().map(ScheduleController::convertScheduleToDTO).collect(Collectors.toList());
+        }
+        return null;
     }
 
     @GetMapping("/pet/{petId}")

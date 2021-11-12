@@ -8,7 +8,7 @@ public class EmployeeSkills {
     @GeneratedValue
     private Long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "employee_id", referencedColumnName = "id")
     private User employee;
 

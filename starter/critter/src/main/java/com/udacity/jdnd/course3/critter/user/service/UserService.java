@@ -7,10 +7,13 @@ import com.udacity.jdnd.course3.critter.user.entity.*;
 import com.udacity.jdnd.course3.critter.user.repository.EmployeeDayOfWeekRepository;
 import com.udacity.jdnd.course3.critter.user.repository.EmployeeSkillsRepository;
 import com.udacity.jdnd.course3.critter.user.repository.UserRepository;
+import com.udacity.jdnd.course3.critter.utility.NullAwareBeanUtilsBean;
+import org.apache.commons.beanutils.BeanUtilsBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.lang.reflect.InvocationTargetException;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.*;
@@ -34,14 +37,11 @@ public class UserService {
             Optional<User> optionalUser = userRepo.findById(newCustomer.getId());
             if(optionalUser.isPresent()) {
                 Customer customer = (Customer) optionalUser.get();
-                if(newCustomer.getName() != null) {
-                    customer.setName(newCustomer.getName());
-                }
-                if(newCustomer.getNotes() != null) {
-                    customer.setNotes(newCustomer.getNotes());
-                }
-                if(newCustomer.getPhoneNumber() != null) {
-                    customer.setPhoneNumber(newCustomer.getPhoneNumber());
+                try {
+                    BeanUtilsBean notNull = new NullAwareBeanUtilsBean();
+                    notNull.copyProperties(customer, newCustomer);
+                } catch(IllegalAccessException | InvocationTargetException e) {
+                    e.getCause();
                 }
                 //only adding new pets, deleting pets would be another controller call
                 if(petIds != null) {
@@ -77,6 +77,21 @@ public class UserService {
         return userRepo.save(newCustomer);
     }
 
+    public Customer findCustomerById(Long id) {
+        Optional<User> optionalUser = userRepo.findById(id);
+        if(optionalUser.isEmpty()) {
+            return null;
+        }
+        return (Customer) optionalUser.get();
+    }
+
+    public List<Pet> getCustomerPets(Long customerId) {
+        if(userRepo.existsCustomerById(customerId)) {
+            return userRepo.getById(customerId).getPets();
+        }
+        return null;
+    }
+
     public User getUserByPetId(Long petId) {
         return petService.getOwnerId(petId);
     }
@@ -94,11 +109,11 @@ public class UserService {
             Optional<User> userOptional = userRepo.findById(newEmployee.getId());
             if(userOptional.isPresent()) {
                 Employee employee = (Employee) userOptional.get();
-                if(newEmployee.getName() != null) {
-                    employee.setName(newEmployee.getName());
-                }
-                if(newEmployee.getEmail() != null) {
-                    employee.setEmail(newEmployee.getEmail());
+                try {
+                    BeanUtilsBean notNull = new NullAwareBeanUtilsBean();
+                    notNull.copyProperties(employee, newEmployee);
+                } catch(IllegalAccessException | InvocationTargetException e) {
+                    e.getCause();
                 }
                 //only adding new skills, deleting skills would be another controller call
                 if (skills != null) {
@@ -130,13 +145,7 @@ public class UserService {
         }
 
         if(skills != null) {
-            Set<EmployeeSkills> employeeSkills = new HashSet<>();
-            skills.forEach(skill -> {
-                EmployeeSkills es = new EmployeeSkills(skill);
-                es.setEmployee(newEmployee);
-                employeeSkills.add(es);
-            });
-            newEmployee.setSkills(employeeSkills);
+            saveSkills(skills, newEmployee);
         }
         if(availability != null) {
             saveDaysOfWeek(availability, newEmployee);
@@ -171,10 +180,30 @@ public class UserService {
         }
     }
 
+    private void saveSkills(Set<EmployeeSkill> skills, Employee employee) {
+        Set<EmployeeSkills> newSkills = new HashSet<>();
+        skills.forEach(skill -> {
+            EmployeeSkills temp = new EmployeeSkills(skill);
+            temp.setEmployee(employee);
+            newSkills.add(temp);
+        });
+        employee.setSkills(newSkills);
+    }
+
+    public void setEmployeeSkills(Set<EmployeeSkill> skills, Long employeeId) {
+        Optional<User> oppEmployee = userRepo.findById(employeeId);
+        if(oppEmployee.isPresent()) {
+            Employee employee = (Employee) oppEmployee.get();
+            saveSkills(skills, employee);
+            userRepo.save(employee);
+        }
+    }
+
     public List<Employee> findEmployeesByDateAndSkill(LocalDate date, Set<EmployeeSkill> skills) {
         return userRepo.getEmployeeBySkillAndAvailability(date.getDayOfWeek(), skills)
                 .stream().filter(e -> scheduleService.checkIfEmployeeAlreadyBooked(date, e)).collect(Collectors.toList());
     }
+
 
     public boolean availableDayForEmployee(Long id, DayOfWeek day) {
         return userRepo.employeeAvailableByIdAndDate(id, day) != null;

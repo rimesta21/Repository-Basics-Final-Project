@@ -10,8 +10,8 @@ public class EmployeeDayOfWeek {
     private Long id;
     //This isn't necessary per se but JPA needs it
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "employee_id", referencedColumnName = "id")
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.PERSIST})
+    @JoinColumn(name = "employee_id", referencedColumnName = "id", nullable = false, updatable = false)
     private User employee;
 
     private DayOfWeek day;
