@@ -11,6 +11,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/*
+This represents a Pet which holds an owner and has schedules.
+ */
+
+
 @Entity
 public class Pet {
     @Id

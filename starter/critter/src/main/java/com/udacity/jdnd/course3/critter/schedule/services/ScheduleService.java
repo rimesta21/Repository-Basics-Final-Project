@@ -41,7 +41,10 @@ public class ScheduleService {
             Optional<Schedule> scheduleOptional = scheduleRepo.findById(schedule.getId());
             if (scheduleOptional.isPresent()) {
                 Schedule scheduleUpdate = scheduleOptional.get();
-
+                /*
+                If the day is available then change the day but delete the activities in which the existing employees
+                are no longer available.
+                */
                 if (scheduleUpdate.getDate() != schedule.getDate() && !scheduleRepo.existsScheduleByDate(schedule.getDate())) {
                     scheduleUpdate.setDate(schedule.getDate());
                     List<Activity> deleted = new ArrayList<>();
@@ -59,6 +62,10 @@ public class ScheduleService {
 
                 List<Long> newEmployeeIds = updateEmployeeList(scheduleUpdate.getActivities(), employeeIds);
                 if (addPets(scheduleUpdate, petIds) && activities != null && employeeIds != null) {
+                    /*
+                    If pets were added then just add all the activities in indiscriminately because there is not enough
+                    information to discern which pets get which activities.
+                    */
                     activities.forEach(description -> {
                         Activity activity = activityService.saveEmployeesById(scheduleUpdate.getDate(), newEmployeeIds, description);
                         if(activity != null) {
@@ -68,6 +75,10 @@ public class ScheduleService {
                     });
                     return scheduleRepo.save(scheduleUpdate);
                 } else if (activities != null && employeeIds != null) {
+                    /*
+                    If no pets were added, only add the activities that didn't exist before and assume these new activities
+                    are happening to the existing pets
+                    */
                     Set<EmployeeSkill> existingActivities = scheduleUpdate.getActivities().stream().map(Activity::getDescription)
                             .collect(Collectors.toSet());
                     activities.stream().filter(description -> !existingActivities.contains(description))
@@ -78,11 +89,11 @@ public class ScheduleService {
                                     scheduleUpdate.getActivities().add(activity);
                                 }
                             });
-                /*
-                This assumes that if only the employeeIds are submitted, then and add new the new employees and add new
-                Activities from the new employs' skill set
-                 */
                 } else if (employeeIds != null) {
+                    /*
+                    This assumes that if only the employeeIds are submitted, then and add the new employees and add new
+                    Activities from the new employs' skill set. Pretty big assumption but I like this implementation
+                    */
                     Set<EmployeeSkill> existingActivities = scheduleUpdate.getActivities().stream().map(Activity::getDescription)
                             .collect(Collectors.toSet());
                     createActivitiesFromEmployees(existingActivities, newEmployeeIds, scheduleUpdate);
@@ -91,6 +102,7 @@ public class ScheduleService {
             }
         }
 
+        //Follows a similar pattern as above just creating a new schedule as opposed to updating it.
         if(schedule.getDate() != null && scheduleRepo.findScheduleByDate(schedule.getDate()) == null) {
             savePets(schedule, petIds);
             schedule.setActivities(new ArrayList<>());
@@ -111,7 +123,9 @@ public class ScheduleService {
         throw new ScheduleAlreadyExists("Schedule already exists on this date.");
     }
 
+
     private void createActivitiesFromEmployees(Set<EmployeeSkill> existingActivities, List<Long> employeeIds, Schedule schedule) {
+        //creates an activity from the employees' skill set that already don't exist on that schedule
         employeeIds.stream().filter(id -> userService.employeeExists(id)
                                         && userService.availableDayForEmployee(id, schedule.getDate().getDayOfWeek())
                                         && checkIfEmployeeAlreadyBooked(schedule.getDate(), userService.findEmployeeById(id)))
@@ -131,6 +145,7 @@ public class ScheduleService {
     }
 
     private List<Long> updateEmployeeList(List<Activity> activities, List<Long> newEmployeeIds) {
+        //Add the old and new employees
         if(activities != null) {
             List<Long> employeeIds = new ArrayList<>();
             activities.forEach(activity -> {
@@ -147,6 +162,7 @@ public class ScheduleService {
     }
 
     public boolean checkIfEmployeeAlreadyBooked(LocalDate date, Employee employee) {
+        //if the employee is already booked on this day then ignore
         Schedule schedule = scheduleRepo.findScheduleByDate(date);
         if(schedule != null) {
             List<Activity> activities = schedule.getActivities();
@@ -160,6 +176,7 @@ public class ScheduleService {
     }
 
     private boolean petExistsAndCanBeScheduled(Schedule schedule, Long petId) {
+        //make sure the pet isn't already on this schedule
         Pet pet = petService.getPetById(petId);
         return pet != null && !schedule.getPets().contains(pet);
     }

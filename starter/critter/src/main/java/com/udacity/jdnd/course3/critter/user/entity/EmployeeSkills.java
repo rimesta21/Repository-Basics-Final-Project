@@ -2,6 +2,8 @@ package com.udacity.jdnd.course3.critter.user.entity;
 
 import javax.persistence.*;
 
+//A helper table that tracks multiple skills of an employee
+
 @Entity
 public class EmployeeSkills {
     @Id

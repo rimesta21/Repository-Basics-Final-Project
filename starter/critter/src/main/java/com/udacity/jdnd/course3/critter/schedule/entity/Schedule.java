@@ -9,6 +9,11 @@ import javax.persistence.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/*
+This represents a schedule that is on a day and has pets and activities.
+ */
+
+
 @Entity
 public class Schedule {
     @Id

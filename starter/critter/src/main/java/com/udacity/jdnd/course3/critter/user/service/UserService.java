@@ -63,6 +63,7 @@ public class UserService {
 
         if(petIds != null) {
             List<Pet> pets = new ArrayList<>();
+            //only add the pets that exists
             petIds.stream()
                     .filter(id -> petService.getPetById(id) != null)
                     .forEach(id -> {

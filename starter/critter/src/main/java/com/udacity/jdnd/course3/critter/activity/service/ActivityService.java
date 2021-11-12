@@ -35,6 +35,7 @@ public class ActivityService {
     public void deleteActivityById(Long id) {activityRepo.deleteById(id);}
 
 
+    //This method finds which employees have the skills and availability to perform this activity
     public Activity saveEmployeesById(LocalDate date, List<Long> employeeIds, EmployeeSkill description) {
         int i = 0;
         int size = employeeIds.size();
@@ -42,6 +43,7 @@ public class ActivityService {
             Employee employee;
             Long id;
             try {
+                //We can potentially remove all the employees from the list
                 id = employeeIds.get(i);
                 employee = userService.findEmployeeById(id);
             } catch(IndexOutOfBoundsException e) {
@@ -53,8 +55,10 @@ public class ActivityService {
                 size--;
                 continue;
             }
+            //check if the employee has the skill level and is available on that day
             if(userService.availableDayForEmployee(id, date.getDayOfWeek())
                     && userService.withInSkillRangeForEmployee(id, description)) {
+                //if so create the activity with this employee
                 Activity activity = new Activity(description, employee);
                 if(employee.getActivities() != null) {
                     employee.getActivities().add(activity);

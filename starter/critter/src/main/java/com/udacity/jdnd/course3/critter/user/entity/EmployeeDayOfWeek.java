@@ -3,6 +3,8 @@ package com.udacity.jdnd.course3.critter.user.entity;
 import javax.persistence.*;
 import java.time.DayOfWeek;
 
+//A helper table to track multiple days of an employee
+
 @Entity
 public class EmployeeDayOfWeek {
     @Id

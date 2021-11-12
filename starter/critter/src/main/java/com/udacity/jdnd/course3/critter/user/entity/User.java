@@ -10,6 +10,11 @@ import javax.persistence.*;
 import java.util.List;
 import java.util.Set;
 
+/*
+Abstract class of a user that is either a Customer or a employee. This is where all the table mappings are.
+ */
+
+
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 public class User {

@@ -10,6 +10,13 @@ import com.udacity.jdnd.course3.critter.user.entity.User;
 import javax.persistence.*;
 import java.math.BigDecimal;
 
+/*
+This entity represents an activity that an employee performs on pets. If more information was provided in the DTO then
+maybe this activity could also track pets. I like this implementation because it tracks which employees did what and the
+price and quantity of each activity. This gives the ability to track more information in the future.
+ */
+
+
 @Entity
 public class Activity {
     @Id

@@ -35,8 +35,10 @@ public class PetService {
     public Pet eatPet(Pet newPet, Long ownerId) {
         if(newPet.getId() != null) {
             Optional<Pet> optionalPet = petRepo.findById(newPet.getId());
+            //if the pet does exist then just update it instead
             if(optionalPet.isPresent()) {
                 Pet pet = optionalPet.get();
+                //copy all non-null entries
                 try {
                     BeanUtilsBean notNull = new NullAwareBeanUtilsBean();
                     notNull.copyProperties(pet, newPet);
@@ -45,6 +47,7 @@ public class PetService {
                 }
 
                 if(ownerId != null && userService.employeeExists(ownerId)) {
+                    //update the owner
                     Customer oldCustomer = pet.getOwner();
                     if(oldCustomer != null && oldCustomer.getPets() != null) {
                         oldCustomer.getPets().remove(pet);
@@ -56,9 +59,11 @@ public class PetService {
                 return petRepo.save(pet);
             }
         }
+        //I get a lot of errors without this
         newPet.setId(null);
         if(ownerId != null && userService.employeeExists(ownerId)) {
             Customer customer = userService.findCustomerById(ownerId);
+            //set the customer
             if(customer.getPets() != null) {
                 customer.getPets().add(newPet);
             } else {
