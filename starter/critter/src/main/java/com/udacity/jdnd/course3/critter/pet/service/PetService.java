@@ -11,12 +11,14 @@ import org.assertj.core.util.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 
 
 @Service
+@Transactional
 public class PetService {
     @Autowired
     private PetRepository petRepo;

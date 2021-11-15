@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class ScheduleService {
     @Autowired
     private ScheduleRepository scheduleRepo;
@@ -35,7 +36,7 @@ public class ScheduleService {
         scheduleRepo.deleteById(id);
     }
 
-    @Transactional
+
     public Schedule eatSchedule(Schedule schedule, List<Long> employeeIds, List<Long> petIds, Set<EmployeeSkill> activities)  {
         if(schedule.getId() != null) {
             Optional<Schedule> scheduleOptional = scheduleRepo.findById(schedule.getId());
@@ -148,9 +149,7 @@ public class ScheduleService {
         //Add the old and new employees
         if(activities != null) {
             List<Long> employeeIds = new ArrayList<>();
-            activities.forEach(activity -> {
-                employeeIds.add(activity.getEmployee().getId());
-            });
+            activities.forEach(activity -> employeeIds.add(activity.getEmployee().getId()));
             newEmployeeIds.stream().filter(id -> !employeeIds.contains(id)).forEach(employeeIds::add);
             return employeeIds;
         }
